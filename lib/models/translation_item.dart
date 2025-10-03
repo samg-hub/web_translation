@@ -6,6 +6,7 @@ class TranslationItem {
   final bool hasPlaceholders;
   final bool isCompleted;
   final DateTime? lastModified;
+  final bool? isType;
 
   TranslationItem({
     required this.key,
@@ -15,6 +16,7 @@ class TranslationItem {
     required this.hasPlaceholders,
     this.isCompleted = false,
     this.lastModified,
+    this.isType = false,
   });
 
   factory TranslationItem.fromJson(Map<String, dynamic> json) {
@@ -22,14 +24,15 @@ class TranslationItem {
       key: json['key'] as String,
       originalValue: json['originalValue'] as String,
       translatedValue: json['translatedValue'] as String,
-      metadata: json['metadata'] != null 
+      metadata: json['metadata'] != null
           ? JsonMetadata.fromJson(json['metadata'] as Map<String, dynamic>)
           : null,
       hasPlaceholders: json['hasPlaceholders'] as bool,
       isCompleted: json['isCompleted'] as bool? ?? false,
-      lastModified: json['lastModified'] != null 
-          ? DateTime.parse(json['lastModified'] as String) 
+      lastModified: json['lastModified'] != null
+          ? DateTime.parse(json['lastModified'] as String)
           : null,
+      isType: json['isType'] as bool? ?? false,
     );
   }
 
@@ -42,6 +45,7 @@ class TranslationItem {
       'hasPlaceholders': hasPlaceholders,
       'isCompleted': isCompleted,
       'lastModified': lastModified?.toIso8601String(),
+      'isType': isType,
     };
   }
 
@@ -53,6 +57,7 @@ class TranslationItem {
     bool? hasPlaceholders,
     bool? isCompleted,
     DateTime? lastModified,
+    bool? isType,
   }) {
     return TranslationItem(
       key: key ?? this.key,
@@ -62,6 +67,7 @@ class TranslationItem {
       hasPlaceholders: hasPlaceholders ?? this.hasPlaceholders,
       isCompleted: isCompleted ?? this.isCompleted,
       lastModified: lastModified ?? this.lastModified,
+      isType: isType ?? this.isType,
     );
   }
 
@@ -75,12 +81,7 @@ class JsonMetadata {
   final String? context;
   final String? type;
 
-  JsonMetadata({
-    this.placeholders,
-    this.description,
-    this.context,
-    this.type,
-  });
+  JsonMetadata({this.placeholders, this.description, this.context, this.type});
 
   factory JsonMetadata.fromJson(Map<String, dynamic> json) {
     return JsonMetadata(
@@ -115,11 +116,7 @@ class PlaceholderInfo {
   final String? description;
   final String? example;
 
-  PlaceholderInfo({
-    required this.type,
-    this.description,
-    this.example,
-  });
+  PlaceholderInfo({required this.type, this.description, this.example});
 
   factory PlaceholderInfo.fromJson(Map<String, dynamic> json) {
     return PlaceholderInfo(
@@ -130,11 +127,6 @@ class PlaceholderInfo {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'description': description,
-      'example': example,
-    };
+    return {'type': type, 'description': description, 'example': example};
   }
 }
-

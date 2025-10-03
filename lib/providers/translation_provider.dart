@@ -10,23 +10,30 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
   Future<void> loadJsonFile(String jsonContent, String fileName) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      
+
       final jsonStructure = JsonParserService.parseJsonFile(
         jsonContent: jsonContent,
         fileName: fileName,
       );
-      
+      final updateList = <TranslationItem>[];
+
+      for (var item in jsonStructure.translationItems) {
+        if (item.key.startsWith('@') && item.key.endsWith("type")) {
+          updateList.add(item.copyWith(isCompleted: true, isType: true));
+        } else {
+          updateList.add(item);
+        }
+      }
+
       state = state.copyWith(
-        jsonStructure: jsonStructure,
+        jsonStructure: jsonStructure.copyWith(
+          translationItems: updateList.toList(),
+        ),
         isLoading: false,
         searchQuery: '',
       );
     } catch (e) {
-      print(e);
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -38,7 +45,10 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
       if (item.key == key) {
         final isCompleted = translatedValue.trim().isNotEmpty;
         final hasValidPlaceholders = item.hasPlaceholders
-            ? JsonParserService.validatePlaceholders(item.originalValue, translatedValue)
+            ? JsonParserService.validatePlaceholders(
+                item.originalValue,
+                translatedValue,
+              )
             : true;
 
         return item.copyWith(
@@ -112,7 +122,9 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
     final updatedItems = state.jsonStructure!.translationItems.map((item) {
       if (!item.isCompleted) {
         return item.copyWith(
-          translatedValue: item.translatedValue.isEmpty ? item.originalValue : item.translatedValue,
+          translatedValue: item.translatedValue.isEmpty
+              ? item.originalValue
+              : item.translatedValue,
           isCompleted: true,
           lastModified: DateTime.now(),
         );
@@ -131,22 +143,24 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
   /// Get filtered translation items based on search query
   List<TranslationItem> getFilteredItems() {
     if (state.jsonStructure == null) return [];
-    
+
     final items = state.jsonStructure!.translationItems;
-    
+
     if (state.searchQuery.isEmpty) return items;
-    
+
     final query = state.searchQuery.toLowerCase();
     return items.where((item) {
       return item.key.toLowerCase().contains(query) ||
-             item.originalValue.toLowerCase().contains(query) ||
-             item.translatedValue.toLowerCase().contains(query);
+          item.originalValue.toLowerCase().contains(query) ||
+          item.translatedValue.toLowerCase().contains(query);
     }).toList();
   }
 
   /// Get items by completion status
   List<TranslationItem> getItemsByStatus(bool completed) {
-    return getFilteredItems().where((item) => item.isCompleted == completed).toList();
+    return getFilteredItems()
+        .where((item) => item.isCompleted == completed)
+        .toList();
   }
 
   /// Get items with placeholders
@@ -157,17 +171,20 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
   /// Validate all translations
   List<String> validateTranslations() {
     final errors = <String>[];
-    
+
     if (state.jsonStructure == null) return errors;
-    
+
     for (final item in state.jsonStructure!.translationItems) {
       if (item.isCompleted && item.hasPlaceholders) {
-        if (!JsonParserService.validatePlaceholders(item.originalValue, item.translatedValue)) {
+        if (!JsonParserService.validatePlaceholders(
+          item.originalValue,
+          item.translatedValue,
+        )) {
           errors.add('Placeholder validation failed for key: ${item.key}');
         }
       }
     }
-    
+
     return errors;
   }
 
@@ -213,7 +230,7 @@ class TranslationState {
   bool get isFullyTranslated => jsonStructure?.isFullyTranslated ?? false;
 }
 
-final translationProvider = StateNotifierProvider<TranslationNotifier, TranslationState>(
-  (ref) => TranslationNotifier(),
-);
-
+final translationProvider =
+    StateNotifierProvider<TranslationNotifier, TranslationState>(
+      (ref) => TranslationNotifier(),
+    );

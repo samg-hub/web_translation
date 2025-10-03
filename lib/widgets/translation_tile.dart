@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../models/translation_item.dart';
 import '../services/json_parser_service.dart';
@@ -300,39 +301,8 @@ class _TranslationTileState extends State<TranslationTile> {
     try {
       // Copy to clipboard
       await Clipboard.setData(ClipboardData(text: placeholder));
-
-      // Also insert it into the text field at cursor position
-      final currentText = _controller.text;
-      final cursorPosition = _controller.selection.baseOffset;
-
-      final newText =
-          currentText.substring(0, cursorPosition) +
-          placeholder +
-          currentText.substring(cursorPosition);
-
-      _controller.text = newText;
-      _controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: cursorPosition + placeholder.length),
-      );
-
-      // Trigger the change
-      _onTextChanged(newText);
     } catch (e) {
       // Fallback: just insert into text field
-      final currentText = _controller.text;
-      final cursorPosition = _controller.selection.baseOffset;
-
-      final newText =
-          currentText.substring(0, cursorPosition) +
-          placeholder +
-          currentText.substring(cursorPosition);
-
-      _controller.text = newText;
-      _controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: cursorPosition + placeholder.length),
-      );
-
-      _onTextChanged(newText);
     }
   }
 
