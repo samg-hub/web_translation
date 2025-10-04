@@ -134,11 +134,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () => _saveProject(context, ref),
-            tooltip: 'Save Project',
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.save),
+          //   onPressed: () => _saveProject(context, ref),
+          //   tooltip: 'Save Project',
+          // ),
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: () => _exportProject(context, ref),
@@ -163,94 +163,113 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: CustomScrollView(
+        slivers: [
           // Progress indicator
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TranslationProgressIndicator(
-              completedItems: translationState.completedItems,
-              totalItems: translationState.totalItems,
-              progressPercentage: translationState.progressPercentage,
-              isFullyTranslated: translationState.isFullyTranslated,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: TranslationProgressIndicator(
+                completedItems: translationState.completedItems,
+                totalItems: translationState.totalItems,
+                progressPercentage: translationState.progressPercentage,
+                isFullyTranslated: translationState.isFullyTranslated,
+              ),
             ),
           ),
 
           // Search and filter bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                Row(
+          SliverAppBar(
+            toolbarHeight: 128,
+            pinned: false,
+            floating: true,
+            leading: SizedBox(),
+            actions: [],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: TranslationSearchBar(
-                        onChanged: (query) {
-                          ref
-                              .read(translationProvider.notifier)
-                              .setSearchQuery(query);
-                        },
-                      ),
-                    ),
-
-                    // Language selection dropdown
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 0,
-                      ),
-                      margin: const EdgeInsets.symmetric(horizontal: 24),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: colorScheme.outline),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: ref.watch(languageProvider),
-                          hint: const Text('Select Language'),
-                          isExpanded: false,
-                          icon: const Icon(Icons.arrow_drop_down),
-                          items: _languages.map((language) {
-                            return DropdownMenuItem<String>(
-                              value: language['code'],
-                              child: Text(language['name']!),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
-                            ref.read(languageProvider.notifier).state =
-                                newValue;
-                          },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TranslationSearchBar(
+                            onChanged: (query) {
+                              ref
+                                  .read(translationProvider.notifier)
+                                  .setSearchQuery(query);
+                            },
+                          ),
                         ),
-                      ),
+
+                        // Language selection dropdown
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 0,
+                          ),
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: colorScheme.outline),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: ref.watch(languageProvider),
+                              hint: const Text('Select Language'),
+                              isExpanded: false,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              items: _languages.map((language) {
+                                return DropdownMenuItem<String>(
+                                  value: language['code'],
+                                  child: Text(language['name']!),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                ref.read(languageProvider.notifier).state =
+                                    newValue;
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    FilterChips(
+                      options: _filterOptions,
+                      selectedOption: _selectedFilter,
+                      onChanged: (option) {
+                        setState(() {
+                          _selectedFilter = option ?? 'All';
+                        });
+                      },
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                FilterChips(
-                  options: _filterOptions,
-                  selectedOption: _selectedFilter,
-                  onChanged: (option) {
-                    setState(() {
-                      _selectedFilter = option ?? 'All';
-                    });
-                  },
-                ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 16),
+          SliverToBoxAdapter(child: const SizedBox(height: 16)),
 
           // Translation items list
-          Expanded(
-            child: filteredItems.isEmpty
-                ? _buildEmptyState(context, theme, colorScheme)
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = filteredItems[index];
-                      return TranslationTile(
+          filteredItems.isEmpty
+              ? SliverFillRemaining(
+                  child: _buildEmptyState(context, theme, colorScheme),
+                )
+              : SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = filteredItems[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        top: 8,
+                        left: 16,
+                        right: 16,
+                      ),
+                      child: TranslationTile(
                         key: ValueKey(item.key),
                         item: item,
                         onTranslationChanged: (value) {
@@ -263,10 +282,10 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                               .read(translationProvider.notifier)
                               .markAsCompleted(item.key, completed);
                         },
-                      );
-                    },
-                  ),
-          ),
+                      ),
+                    );
+                  }, childCount: filteredItems.length),
+                ),
         ],
       ),
       floatingActionButton: translationState.isFullyTranslated

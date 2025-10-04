@@ -23,13 +23,7 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () => _showSavedProjects(context, ref),
-            tooltip: 'Saved Projects',
-          ),
-        ],
+        actions: [],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -103,72 +97,71 @@ class HomeScreen extends ConsumerWidget {
                       () => _importJsonFile(context, ref),
                     ),
 
-                    const SizedBox(height: 16),
+                    // const SizedBox(height: 16),
 
-                    _buildActionButton(
-                      context,
-                      'Continue Last Project',
-                      'Resume your previous translation work',
-                      Icons.restore,
-                      colorScheme.secondary,
-                      translationState.hasProject
-                          ? () => _continueProject(context, ref)
-                          : null,
-                    ),
+                    // _buildActionButton(
+                    //   context,
+                    //   'Continue Last Project',
+                    //   'Resume your previous translation work',
+                    //   Icons.restore,
+                    //   colorScheme.secondary,
+                    //   translationState.hasProject
+                    //       ? () => _continueProject(context, ref)
+                    //       : null,
+                    // ),
+                    // const SizedBox(height: 16),
 
-                    const SizedBox(height: 16),
-
-                    _buildActionButton(
-                      context,
-                      'View Saved Projects',
-                      'Browse and manage your saved projects',
-                      Icons.folder,
-                      colorScheme.tertiary,
-                      () => _showSavedProjects(context, ref),
-                    ),
+                    // _buildActionButton(
+                    //   context,
+                    //   'View Saved Projects',
+                    //   'Browse and manage your saved projects',
+                    //   Icons.folder,
+                    //   colorScheme.tertiary,
+                    //   () => _showSavedProjects(context, ref),
+                    // ),
                   ],
                 ),
 
                 const Spacer(),
 
                 // Recent projects section
-                if (fileHandlerState.savedProjects.isNotEmpty) ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest.withValues(
-                        alpha: 0.3,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Recent Projects',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...fileHandlerState.savedProjects.take(3).map((
-                          project,
-                        ) {
-                          return ListTile(
-                            leading: const Icon(Icons.description),
-                            title: Text(project['fileName']),
-                            subtitle: Text(
-                              'Saved: ${_formatDate(project['savedAt'])}',
-                            ),
-                            onTap: () =>
-                                _loadProject(context, ref, project['filePath']),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ],
+                // if (fileHandlerState.savedProjects.isNotEmpty) ...[
+                //   Container(
+                //     width: double.infinity,
+                //     padding: const EdgeInsets.all(16),
+                //     decoration: BoxDecoration(
+                //       color: colorScheme.surfaceContainerHighest.withValues(
+                //         alpha: 0.3,
+                //       ),
+                //       borderRadius: BorderRadius.circular(12),
+                //     ),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         Text(
+                //           'Recent Projects',
+                //           style: theme.textTheme.titleMedium?.copyWith(
+                //             fontWeight: FontWeight.bold,
+                //           ),
+                //         ),
+                //         const SizedBox(height: 8),
+                //         ...fileHandlerState.savedProjects.take(3).map((
+                //           project,
+                //         ) {
+                //           return ListTile(
+                //             leading: const Icon(Icons.description),
+                //             title: Text(project['fileName']),
+                //             subtitle: Text(
+                //               'Saved: ${_formatDate(project['savedAt'])}',
+                //             ),
+                //             onTap: () =>
+                //                 _loadProject(context, ref, project['filePath']),
+                //           );
+                //         }),
+                //       ],
+                //     ),
+                //   ),
+                // ],
 
                 // Loading indicator
                 if (fileHandlerState.isLoading)

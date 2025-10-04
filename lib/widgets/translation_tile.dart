@@ -212,7 +212,7 @@ tr: {${ref.read(languageProvider)}}""",
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    SelectableText(
                       widget.item.originalValue,
                       style: theme.textTheme.bodyMedium,
                     ),
@@ -365,14 +365,14 @@ tr: {${ref.read(languageProvider)}}""",
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (metadata.description != null) ...[
-            Text(
+            SelectableText(
               'Description: ${metadata.description}',
               style: theme.textTheme.labelSmall,
             ),
             const SizedBox(height: 4),
           ],
           if (metadata.context != null) ...[
-            Text(
+            SelectableText(
               'Context: ${metadata.context}',
               style: theme.textTheme.labelSmall,
             ),
@@ -390,7 +390,7 @@ tr: {${ref.read(languageProvider)}}""",
             ...metadata.placeholders!.entries.map((entry) {
               return Padding(
                 padding: const EdgeInsets.only(left: 8),
-                child: Text(
+                child: SelectableText(
                   '${entry.key}: ${entry.value.type}',
                   style: theme.textTheme.labelSmall,
                 ),
