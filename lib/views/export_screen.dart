@@ -7,10 +7,7 @@ import '../providers/file_handler_provider.dart';
 class ExportScreen extends ConsumerStatefulWidget {
   final JsonStructure jsonStructure;
 
-  const ExportScreen({
-    super.key,
-    required this.jsonStructure,
-  });
+  const ExportScreen({super.key, required this.jsonStructure});
 
   @override
   ConsumerState<ExportScreen> createState() => _ExportScreenState();
@@ -19,8 +16,8 @@ class ExportScreen extends ConsumerStatefulWidget {
 class _ExportScreenState extends ConsumerState<ExportScreen> {
   String _fileName = '';
   String _selectedFormat = 'json';
-  bool _includeMetadata = true;
-  bool _includePlaceholders = true;
+  final bool _includeMetadata = true;
+  final bool _includePlaceholders = true;
   final TextEditingController _fileNameController = TextEditingController();
 
   @override
@@ -56,29 +53,29 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           children: [
             // Project summary
             _buildProjectSummary(context, theme, colorScheme),
-            
+
             const SizedBox(height: 24),
-            
+
             // Export options
             _buildExportOptions(context, theme, colorScheme),
-            
+
             const SizedBox(height: 24),
-            
+
             // Preview section
             _buildPreviewSection(context, theme, colorScheme),
-            
+
             const SizedBox(height: 24),
-            
+
             // Export buttons
             _buildExportButtons(context, theme, colorScheme),
-            
+
             // Loading indicator
             if (fileHandlerState.isExporting)
               const Padding(
                 padding: EdgeInsets.all(16),
                 child: Center(child: CircularProgressIndicator()),
               ),
-            
+
             // Error message
             if (fileHandlerState.hasError)
               Container(
@@ -98,14 +95,13 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                     Expanded(
                       child: Text(
                         fileHandlerState.error!,
-                        style: TextStyle(
-                          color: colorScheme.onErrorContainer,
-                        ),
+                        style: TextStyle(color: colorScheme.onErrorContainer),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () => ref.read(fileHandlerProvider.notifier).clearError(),
+                      onPressed: () =>
+                          ref.read(fileHandlerProvider.notifier).clearError(),
                     ),
                   ],
                 ),
@@ -127,9 +123,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.3),
-        ),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,17 +210,13 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: colorScheme.primary,
-            ),
+            Icon(icon, size: 16, color: colorScheme.primary),
             const SizedBox(width: 4),
             Text(
               label,
@@ -258,9 +248,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.3),
-        ),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +260,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           // File name input
           TextField(
             controller: _fileNameController,
@@ -286,9 +274,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               prefixIcon: const Icon(Icons.edit),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Format selection
           Text(
             'Export Format',
@@ -305,31 +293,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               _buildFormatOption('txt', 'TXT', Icons.text_snippet),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
-          // Additional options
-          Text(
-            'Additional Options',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          CheckboxListTile(
-            title: const Text('Include metadata'),
-            subtitle: const Text('Include placeholder and context information'),
-            value: _includeMetadata,
-            onChanged: (value) => setState(() => _includeMetadata = value ?? true),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-          CheckboxListTile(
-            title: const Text('Include placeholders'),
-            subtitle: const Text('Preserve placeholder syntax in translations'),
-            value: _includePlaceholders,
-            onChanged: (value) => setState(() => _includePlaceholders = value ?? true),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
         ],
       ),
     );
@@ -339,13 +304,15 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = _selectedFormat == value;
-    
+
     return InkWell(
       onTap: () => setState(() => _selectedFormat = value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primary : colorScheme.surfaceVariant,
+          color: isSelected
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? colorScheme.primary : colorScheme.outline,
@@ -356,14 +323,18 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+              color: isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -379,17 +350,17 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     ColorScheme colorScheme,
   ) {
     final translatedJson = widget.jsonStructure.getTranslatedJson();
-    final jsonString = const JsonEncoder.withIndent('  ').convert(translatedJson);
-    
+    final jsonString = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(translatedJson);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.3),
-        ),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,11 +377,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             height: 200,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: colorScheme.outline.withOpacity(0.3),
-              ),
+              border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
             ),
             child: SingleChildScrollView(
               child: Text(
@@ -461,9 +430,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   Future<void> _exportSingleFormat() async {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
     final fileName = '$_fileName.$_selectedFormat';
-    
+
     await fileHandlerNotifier.exportJsonFile(widget.jsonStructure, fileName);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -476,16 +445,16 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
   Future<void> _exportMultipleFormats() async {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
-    
+
     await fileHandlerNotifier.exportToMultipleFormats(
       widget.jsonStructure,
       _fileName,
     );
-    
+
     if (mounted) {
       final results = ref.read(fileHandlerProvider).lastExportResults!;
       final exportedFiles = results.values.where((path) => path != null).length;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Exported $exportedFiles files successfully'),

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:web_translation/api/domain/resouse/data_state.dart';
+import 'package:web_translation/api/models/gemini_response_model.dart';
 import '../models/translation_item.dart';
 import '../services/json_parser_service.dart';
+import '../providers/gemini_provider.dart';
 
-class TranslationTile extends StatefulWidget {
+class TranslationTile extends StatefulHookConsumerWidget {
   final TranslationItem item;
   final ValueChanged<String> onTranslationChanged;
   final ValueChanged<bool> onCompletedChanged;
@@ -21,10 +25,10 @@ class TranslationTile extends StatefulWidget {
   });
 
   @override
-  State<TranslationTile> createState() => _TranslationTileState();
+  ConsumerState<TranslationTile> createState() => _TranslationTileState();
 }
 
-class _TranslationTileState extends State<TranslationTile> {
+class _TranslationTileState extends ConsumerState<TranslationTile> {
   late TextEditingController _controller;
   bool _isValid = true;
   String _validationError = '';
@@ -75,11 +79,24 @@ class _TranslationTileState extends State<TranslationTile> {
     _validateTranslation();
   }
 
+  bool get isType => widget.item.isType == true;
+
   @override
   Widget build(BuildContext context) {
+    final geminiState = ref.watch(geminiProvider(widget.item.key));
+
+    ref.listen(geminiProvider(widget.item.key), (previous, next) {
+      if (next.stateChecker == StateCheckerEnum.done) {
+        _onTextChanged(
+          next.data?.candidates?.first.content?.parts?.first.text ?? '',
+        );
+      }
+    });
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
+    if (isType) {
+      return SizedBox();
+    }
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       elevation: widget.isSelected ? 8 : 2,
@@ -122,6 +139,39 @@ class _TranslationTileState extends State<TranslationTile> {
                           color: colorScheme.onSecondary,
                         ),
                       ),
+                    ),
+                  const SizedBox(width: 8),
+                  if (geminiState.stateChecker == StateCheckerEnum.loading)
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: const CircularProgressIndicator(),
+                    )
+                  else
+                    IconButton(
+                      onPressed: () async {
+                        await ref
+                            .read(geminiProvider(widget.item.key).notifier)
+                            .ask([
+                              Parts(
+                                text:
+                                    """You are a translation assistant for a multilingual app. 
+Translate the given text into the target language specified by "tr". 
+Keep any placeholders written in double curly braces (like {{variable}}) exactly as they are — do not translate or modify them.
+
+Example:
+Input: "Continue in {{languageva}}"
+tr: Fa
+Output: "ادامه دادن با زبان {{languageva}}"
+
+Now translate the following:
+
+Input: "${widget.item.originalValue}"
+tr: {Fa}""",
+                              ),
+                            ]);
+                      },
+                      icon: const Icon(Icons.translate),
                     ),
                   const SizedBox(width: 8),
                   Checkbox(
@@ -237,17 +287,6 @@ class _TranslationTileState extends State<TranslationTile> {
               if (widget.item.metadata != null) ...[
                 const SizedBox(height: 8),
                 _buildMetadata(),
-              ],
-
-              // Last modified
-              if (widget.item.lastModified != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Last modified: ${_formatDateTime(widget.item.lastModified!)}',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
               ],
             ],
           ),
