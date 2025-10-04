@@ -16,8 +16,6 @@ class ExportScreen extends ConsumerStatefulWidget {
 class _ExportScreenState extends ConsumerState<ExportScreen> {
   String _fileName = '';
   String _selectedFormat = 'json';
-  final bool _includeMetadata = true;
-  final bool _includePlaceholders = true;
   final TextEditingController _fileNameController = TextEditingController();
 
   @override

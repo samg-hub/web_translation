@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:web_translation/api/domain/resouse/data_state.dart';
 import 'package:web_translation/api/models/gemini_body_model.dart';
@@ -22,3 +23,5 @@ class Gemini extends _$Gemini {
     state = result.fold((l) => DataFailed(l), (r) => DataSuccess(r));
   }
 }
+
+final languageProvider = StateProvider<String?>((ref) => null);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_translation/providers/gemini_provider.dart';
 import '../providers/translation_provider.dart';
 import '../providers/file_handler_provider.dart';
 import '../widgets/translation_tile.dart';
@@ -23,6 +24,68 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     'With Placeholders',
   ];
 
+  // Language selection
+  final List<Map<String, String>> _languages = [
+    {'name': 'Persian', 'code': 'fa'},
+    {'name': 'English', 'code': 'en'},
+    {'name': 'Arabic', 'code': 'ar'},
+    {'name': 'Spanish', 'code': 'es'},
+    {'name': 'French', 'code': 'fr'},
+    {'name': 'German', 'code': 'de'},
+    {'name': 'Italian', 'code': 'it'},
+    {'name': 'Portuguese', 'code': 'pt'},
+    {'name': 'Russian', 'code': 'ru'},
+    {'name': 'Chinese', 'code': 'zh'},
+    {'name': 'Japanese', 'code': 'ja'},
+    {'name': 'Korean', 'code': 'ko'},
+    {'name': 'Turkish', 'code': 'tr'},
+    {'name': 'Dutch', 'code': 'nl'},
+    {'name': 'Swedish', 'code': 'sv'},
+    {'name': 'Norwegian', 'code': 'no'},
+    {'name': 'Danish', 'code': 'da'},
+    {'name': 'Finnish', 'code': 'fi'},
+    {'name': 'Polish', 'code': 'pl'},
+    {'name': 'Czech', 'code': 'cs'},
+    {'name': 'Hungarian', 'code': 'hu'},
+    {'name': 'Romanian', 'code': 'ro'},
+    {'name': 'Bulgarian', 'code': 'bg'},
+    {'name': 'Croatian', 'code': 'hr'},
+    {'name': 'Slovak', 'code': 'sk'},
+    {'name': 'Slovenian', 'code': 'sl'},
+    {'name': 'Estonian', 'code': 'et'},
+    {'name': 'Latvian', 'code': 'lv'},
+    {'name': 'Lithuanian', 'code': 'lt'},
+    {'name': 'Greek', 'code': 'el'},
+    {'name': 'Hebrew', 'code': 'he'},
+    {'name': 'Hindi', 'code': 'hi'},
+    {'name': 'Bengali', 'code': 'bn'},
+    {'name': 'Tamil', 'code': 'ta'},
+    {'name': 'Telugu', 'code': 'te'},
+    {'name': 'Marathi', 'code': 'mr'},
+    {'name': 'Gujarati', 'code': 'gu'},
+    {'name': 'Kannada', 'code': 'kn'},
+    {'name': 'Malayalam', 'code': 'ml'},
+    {'name': 'Punjabi', 'code': 'pa'},
+    {'name': 'Urdu', 'code': 'ur'},
+    {'name': 'Thai', 'code': 'th'},
+    {'name': 'Vietnamese', 'code': 'vi'},
+    {'name': 'Indonesian', 'code': 'id'},
+    {'name': 'Malay', 'code': 'ms'},
+    {'name': 'Filipino', 'code': 'tl'},
+    {'name': 'Ukrainian', 'code': 'uk'},
+    {'name': 'Belarusian', 'code': 'be'},
+    {'name': 'Serbian', 'code': 'sr'},
+    {'name': 'Macedonian', 'code': 'mk'},
+    {'name': 'Albanian', 'code': 'sq'},
+    {'name': 'Maltese', 'code': 'mt'},
+    {'name': 'Icelandic', 'code': 'is'},
+    {'name': 'Irish', 'code': 'ga'},
+    {'name': 'Welsh', 'code': 'cy'},
+    {'name': 'Basque', 'code': 'eu'},
+    {'name': 'Catalan', 'code': 'ca'},
+    {'name': 'Galician', 'code': 'gl'},
+  ];
+
   @override
   Widget build(BuildContext context) {
     final translationState = ref.watch(translationProvider);
@@ -40,16 +103,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: colorScheme.error,
-              ),
+              Icon(Icons.error_outline, size: 64, color: colorScheme.error),
               const SizedBox(height: 16),
-              Text(
-                'No project loaded',
-                style: theme.textTheme.headlineMedium,
-              ),
+              Text('No project loaded', style: theme.textTheme.headlineMedium),
               const SizedBox(height: 8),
               Text(
                 'Please import a JSON file first',
@@ -119,16 +175,55 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               isFullyTranslated: translationState.isFullyTranslated,
             ),
           ),
-          
+
           // Search and filter bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                TranslationSearchBar(
-                  onChanged: (query) {
-                    ref.read(translationProvider.notifier).setSearchQuery(query);
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: TranslationSearchBar(
+                        onChanged: (query) {
+                          ref
+                              .read(translationProvider.notifier)
+                              .setSearchQuery(query);
+                        },
+                      ),
+                    ),
+
+                    // Language selection dropdown
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 0,
+                      ),
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: colorScheme.outline),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: ref.watch(languageProvider),
+                          hint: const Text('Select Language'),
+                          isExpanded: false,
+                          icon: const Icon(Icons.arrow_drop_down),
+                          items: _languages.map((language) {
+                            return DropdownMenuItem<String>(
+                              value: language['code'],
+                              child: Text(language['name']!),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            ref.read(languageProvider.notifier).state =
+                                newValue;
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 FilterChips(
@@ -143,9 +238,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Translation items list
           Expanded(
             child: filteredItems.isEmpty
@@ -159,11 +254,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         key: ValueKey(item.key),
                         item: item,
                         onTranslationChanged: (value) {
-                          ref.read(translationProvider.notifier)
+                          ref
+                              .read(translationProvider.notifier)
                               .updateTranslation(item.key, value);
                         },
                         onCompletedChanged: (completed) {
-                          ref.read(translationProvider.notifier)
+                          ref
+                              .read(translationProvider.notifier)
                               .markAsCompleted(item.key, completed);
                         },
                       );
@@ -258,7 +355,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   List<dynamic> _getFilteredItems(TranslationState state) {
     final notifier = ref.read(translationProvider.notifier);
     List<dynamic> items = notifier.getFilteredItems();
-    
+
     switch (_selectedFilter) {
       case 'Completed':
         items = notifier.getItemsByStatus(true);
@@ -270,17 +367,17 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         items = notifier.getItemsWithPlaceholders();
         break;
     }
-    
+
     return items;
   }
 
   Future<void> _saveProject(BuildContext context, WidgetRef ref) async {
     final translationState = ref.read(translationProvider);
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
-    
+
     if (translationState.hasProject) {
       await fileHandlerNotifier.saveProject(translationState.jsonStructure!);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -294,13 +391,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   void _exportProject(BuildContext context, WidgetRef ref) {
     final translationState = ref.read(translationProvider);
-    
+
     if (translationState.hasProject) {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ExportScreen(
-            jsonStructure: translationState.jsonStructure!,
-          ),
+          builder: (context) =>
+              ExportScreen(jsonStructure: translationState.jsonStructure!),
         ),
       );
     }
@@ -308,7 +404,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
     final translationNotifier = ref.read(translationProvider.notifier);
-    
+
     switch (action) {
       case 'clear_all':
         _showConfirmDialog(
@@ -354,10 +450,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: onConfirm,
-            child: const Text('Confirm'),
-          ),
+          TextButton(onPressed: onConfirm, child: const Text('Confirm')),
         ],
       ),
     );
@@ -366,7 +459,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   void _validateTranslations(BuildContext context, WidgetRef ref) {
     final translationNotifier = ref.read(translationProvider.notifier);
     final errors = translationNotifier.validateTranslations();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

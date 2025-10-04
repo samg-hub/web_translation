@@ -150,6 +150,12 @@ class _TranslationTileState extends ConsumerState<TranslationTile> {
                   else
                     IconButton(
                       onPressed: () async {
+                        if (ref.watch(languageProvider) == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Please select a language')),
+                          );
+                          return;
+                        }
                         await ref
                             .read(geminiProvider(widget.item.key).notifier)
                             .ask([
@@ -167,7 +173,7 @@ Output: "ادامه دادن با زبان {{languageva}}"
 Now translate the following:
 
 Input: "${widget.item.originalValue}"
-tr: {Fa}""",
+tr: {${ref.read(languageProvider)}}""",
                               ),
                             ]);
                       },
@@ -394,9 +400,5 @@ tr: {Fa}""",
         ],
       ),
     );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }
