@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:convert';
 import '../providers/translation_provider.dart';
 import '../providers/file_handler_provider.dart';
 import 'editor_screen.dart';
@@ -89,9 +88,9 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Action buttons
                 Column(
                   children: [
@@ -103,9 +102,9 @@ class HomeScreen extends ConsumerWidget {
                       colorScheme.primary,
                       () => _importJsonFile(context, ref),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     _buildActionButton(
                       context,
                       'Continue Last Project',
@@ -116,9 +115,9 @@ class HomeScreen extends ConsumerWidget {
                           ? () => _continueProject(context, ref)
                           : null,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     _buildActionButton(
                       context,
                       'View Saved Projects',
@@ -129,16 +128,18 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                
+
                 const Spacer(),
-                
+
                 // Recent projects section
                 if (fileHandlerState.savedProjects.isNotEmpty) ...[
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                      color: colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.3,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -151,28 +152,31 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        ...fileHandlerState.savedProjects.take(3).map((project) {
+                        ...fileHandlerState.savedProjects.take(3).map((
+                          project,
+                        ) {
                           return ListTile(
                             leading: const Icon(Icons.description),
                             title: Text(project['fileName']),
                             subtitle: Text(
                               'Saved: ${_formatDate(project['savedAt'])}',
                             ),
-                            onTap: () => _loadProject(context, ref, project['filePath']),
+                            onTap: () =>
+                                _loadProject(context, ref, project['filePath']),
                           );
                         }),
                       ],
                     ),
                   ),
                 ],
-                
+
                 // Loading indicator
                 if (fileHandlerState.isLoading)
                   const Padding(
                     padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(),
                   ),
-                
+
                 // Error message
                 if (fileHandlerState.hasError)
                   Container(
@@ -199,7 +203,9 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
-                          onPressed: () => ref.read(fileHandlerProvider.notifier).clearError(),
+                          onPressed: () => ref
+                              .read(fileHandlerProvider.notifier)
+                              .clearError(),
                         ),
                       ],
                     ),
@@ -222,7 +228,7 @@ class HomeScreen extends ConsumerWidget {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -275,62 +281,57 @@ class HomeScreen extends ConsumerWidget {
   Future<void> _importJsonFile(BuildContext context, WidgetRef ref) async {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
     final translationNotifier = ref.read(translationProvider.notifier);
-    
+
     await fileHandlerNotifier.importJsonFile();
-    
+
     if (fileHandlerNotifier.state.hasImportedContent) {
       final content = fileHandlerNotifier.state.importedContent!;
       final fileName = 'imported_${DateTime.now().millisecondsSinceEpoch}.json';
-      
+
       await translationNotifier.loadJsonFile(content, fileName);
-      
+
       if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const EditorScreen(),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const EditorScreen()));
       }
     }
   }
 
   void _continueProject(BuildContext context, WidgetRef ref) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const EditorScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const EditorScreen()));
   }
 
   void _showSavedProjects(BuildContext context, WidgetRef ref) {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
     fileHandlerNotifier.loadSavedProjects();
-    
-    showDialog(
-      context: context,
-      builder: (context) => _SavedProjectsDialog(),
-    );
+
+    showDialog(context: context, builder: (context) => _SavedProjectsDialog());
   }
 
-  Future<void> _loadProject(BuildContext context, WidgetRef ref, String filePath) async {
+  Future<void> _loadProject(
+    BuildContext context,
+    WidgetRef ref,
+    String filePath,
+  ) async {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
     final translationNotifier = ref.read(translationProvider.notifier);
-    
+
     await fileHandlerNotifier.loadProject(filePath);
-    
+
     if (fileHandlerNotifier.state.hasLoadedProject) {
       final jsonStructure = fileHandlerNotifier.state.loadedProject!;
-      await translationNotifier.loadJsonFile(
-        json.encode(jsonStructure.originalJson),
-        jsonStructure.fileName,
-      );
-      
+
+      // Instead of loading from originalJson, use the complete JsonStructure
+      // This preserves all translation data
+      translationNotifier.loadJsonStructure(jsonStructure);
+
       if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const EditorScreen(),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const EditorScreen()));
       }
     }
   }
@@ -349,8 +350,7 @@ class _SavedProjectsDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fileHandlerState = ref.watch(fileHandlerProvider);
-    final theme = Theme.of(context);
-    
+
     return AlertDialog(
       title: const Text('Saved Projects'),
       content: SizedBox(
@@ -358,47 +358,40 @@ class _SavedProjectsDialog extends ConsumerWidget {
         child: fileHandlerState.isLoading
             ? const Center(child: CircularProgressIndicator())
             : fileHandlerState.savedProjects.isEmpty
-                ? const Center(
-                    child: Text('No saved projects found'),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: fileHandlerState.savedProjects.length,
-                    itemBuilder: (context, index) {
-                      final project = fileHandlerState.savedProjects[index];
-                      return ListTile(
-                        leading: const Icon(Icons.description),
-                        title: Text(project['fileName']),
-                        subtitle: Text(
-                          'Saved: ${_formatDate(project['savedAt'])}',
+            ? const Center(child: Text('No saved projects found'))
+            : ListView.builder(
+                shrinkWrap: true,
+                itemCount: fileHandlerState.savedProjects.length,
+                itemBuilder: (context, index) {
+                  final project = fileHandlerState.savedProjects[index];
+                  return ListTile(
+                    leading: const Icon(Icons.description),
+                    title: Text(project['fileName']),
+                    subtitle: Text('Saved: ${_formatDate(project['savedAt'])}'),
+                    trailing: PopupMenuButton(
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(value: 'load', child: Text('Load')),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Delete'),
                         ),
-                        trailing: PopupMenuButton(
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'load',
-                              child: Text('Load'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value == 'load') {
-                              Navigator.of(context).pop();
-                              _loadProject(context, ref, project['filePath']);
-                            } else if (value == 'delete') {
-                              _deleteProject(context, ref, project['filePath']);
-                            }
-                          },
-                        ),
-                        onTap: () {
+                      ],
+                      onSelected: (value) {
+                        if (value == 'load') {
                           Navigator.of(context).pop();
                           _loadProject(context, ref, project['filePath']);
-                        },
-                      );
+                        } else if (value == 'delete') {
+                          _deleteProject(context, ref, project['filePath']);
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _loadProject(context, ref, project['filePath']);
                     },
-                  ),
+                  );
+                },
+              ),
       ),
       actions: [
         TextButton(
@@ -409,30 +402,36 @@ class _SavedProjectsDialog extends ConsumerWidget {
     );
   }
 
-  Future<void> _loadProject(BuildContext context, WidgetRef ref, String filePath) async {
+  Future<void> _loadProject(
+    BuildContext context,
+    WidgetRef ref,
+    String filePath,
+  ) async {
     final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
     final translationNotifier = ref.read(translationProvider.notifier);
-    
+
     await fileHandlerNotifier.loadProject(filePath);
-    
+
     if (fileHandlerNotifier.state.hasLoadedProject) {
       final jsonStructure = fileHandlerNotifier.state.loadedProject!;
-      await translationNotifier.loadJsonFile(
-        json.encode(jsonStructure.originalJson),
-        jsonStructure.fileName,
-      );
-      
+
+      // Instead of loading from originalJson, use the complete JsonStructure
+      // This preserves all translation data
+      translationNotifier.loadJsonStructure(jsonStructure);
+
       if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const EditorScreen(),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const EditorScreen()));
       }
     }
   }
 
-  Future<void> _deleteProject(BuildContext context, WidgetRef ref, String filePath) async {
+  Future<void> _deleteProject(
+    BuildContext context,
+    WidgetRef ref,
+    String filePath,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -450,7 +449,7 @@ class _SavedProjectsDialog extends ConsumerWidget {
         ],
       ),
     );
-    
+
     if (confirmed == true) {
       final fileHandlerNotifier = ref.read(fileHandlerProvider.notifier);
       await fileHandlerNotifier.deleteProject(filePath);

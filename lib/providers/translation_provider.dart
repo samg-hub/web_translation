@@ -188,6 +188,15 @@ class TranslationNotifier extends StateNotifier<TranslationState> {
     return errors;
   }
 
+  /// Load JsonStructure directly (for saved projects)
+  void loadJsonStructure(JsonStructure jsonStructure) {
+    state = TranslationState(
+      jsonStructure: jsonStructure,
+      isLoading: false,
+      searchQuery: '',
+    );
+  }
+
   /// Reset state
   void reset() {
     state = const TranslationState();
